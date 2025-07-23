@@ -29,7 +29,7 @@ function getCurrentDayNumber() {
 // Get file ID from Google Drive folder
 async function getFileIdFromDrive(filename) {
   const res = await drive.files.list({
-    q: name='${filename}' and '${process.env.GDRIVE_FOLDER_ID}' in parents,
+    q: `name='${filename}' and '${process.env.GDRIVE_FOLDER_ID}' in parents`,
     fields: "files(id, name)",
     spaces: "drive",
   });
