@@ -29,7 +29,7 @@ const drive = google.drive({ version: "v3", auth });
 
 // Get current day number
 function getCurrentDayNumber() {
-  const start = new Date("2024-07-24");
+  const start = new Date("2024-07-23");
   const now = new Date();
   return Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
 }
@@ -37,7 +37,7 @@ function getCurrentDayNumber() {
 // Get file ID
 async function getFileId(filename) {
   const res = await drive.files.list({
-    q: name='${filename}' and '${GDRIVE_FOLDER_ID}' in parents,
+    q: `name='${filename}' and '${GDRIVE_FOLDER_ID}' in parents`,
     fields: "files(id, name)",
     spaces: "drive",
   });
@@ -49,15 +49,15 @@ async function getFileId(filename) {
 async function getFileUrl(filename) {
   const fileId = await getFileId(filename);
   if (!fileId) return null;
-  return https://drive.google.com/uc?export=download&id=${fileId};
+  return `https://drive.google.com/uc?export=download&id=${fileId}`;
 }
 
 // Main
 async function sendDaily() {
   const day = getCurrentDayNumber();
-  const filename = day${day}.mp3;
+  const filename = `day${day}.mp3`;
 
-  console.log(📅 Sending: ${filename});
+  console.log(`📅 Sending: ${filename}`);
 
   const url = await getFileUrl(filename);
 
