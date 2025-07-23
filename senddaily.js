@@ -47,7 +47,7 @@ async function getDirectLink(filename) {
 // Send daily message and audio
 async function sendDailyVoice() {
   const day = getCurrentDayNumber();
-  const filename = day${day}.mp3;
+  const filename = `day${day}.mp3`;
   const url = await getDirectLink(filename);
 
   if (!url) {
@@ -60,7 +60,7 @@ async function sendDailyVoice() {
   try {
     await bot.telegram.sendMessage(chatId, "Your daily dose of Love ❤");
     await bot.telegram.sendAudio(chatId, { url });
-    console.log(Sent day ${day} audio to ${chatId});
+    console.log(`Sent day ${day} audio to ${chatId}`);
   } catch (err) {
     console.error("Failed to send message:", err.message);
   }
