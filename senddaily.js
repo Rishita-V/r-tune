@@ -47,7 +47,7 @@ async function getDirectLink(filename) {
 }
 
 // Send the daily voice message
-async function sendDaily() {
+async function senddaily() {
   const chatId = process.env.CHAT_ID;
   const day = getCurrentDayNumber();
   const filename = `day${day}.mp3`;
@@ -70,7 +70,7 @@ async function sendDaily() {
 }
 
 // Run it
-sendDaily().finally(() => {
+senddaily().finally(() => {
   bot.stop();
   process.exit(0);
 });
