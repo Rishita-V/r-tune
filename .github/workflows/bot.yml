@@ -1,19 +1,19 @@
-name: R-Tunes Daily Voice Bot
+name: Send Daily Voice Message
 
 on:
   schedule:
-    - cron: '30 3 * * *'  # Runs every day at 9:00 AM IST (3:30 AM UTC)
-  workflow_dispatch:       # Allow manual trigger
+    - cron: '30 3 * * *'    # 9:00 AM IST daily (3:30 AM UTC)
+  workflow_dispatch:        # manual trigger allowed
 
 jobs:
-  send-voice:
+  send-daily-voice:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
@@ -21,10 +21,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run bot script
-        run: node sendDaily.js
+      - name: Run senddaily.js
+        run: node senddaily.js
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
