@@ -41,7 +41,7 @@ async function getFileIdFromDrive(filename) {
 async function getDirectLink(filename) {
   const fileId = await getFileIdFromDrive(filename);
   if (!fileId) return null;
-  return https://drive.google.com/uc?export=download&id=${fileId};
+  return `https://drive.google.com/uc?export=download&id=${fileId}`;
 }
 
 // Send daily message and audio
