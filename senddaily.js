@@ -23,7 +23,7 @@ const drive = google.drive({ version: "v3", auth });
 
 // 🧪 TEMP: Use fixed day for testing
 const day = 1;
-const filename = day${day}.mp3;
+const filename = `day${day}.mp3`;
 
 // Get file ID from Google Drive
 async function getFileIdFromDrive(filename) {
