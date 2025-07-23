@@ -1,8 +1,9 @@
+
 name: Send Daily Message
 
 on:
   schedule:
-    - cron: '30 3 * * *'  # 9:00 AM IST
+    - cron: '0 3 * * *'  # Every day at 9 AM IST (3:30 UTC)
   workflow_dispatch:
 
 jobs:
@@ -10,20 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Run the bot
-        run: node sendDaily.js
+      - name: Run bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
           GOOGLE_SERVICE_ACCOUNT: ${{ secrets.GOOGLE_SERVICE_ACCOUNT }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: node senddaily.js
