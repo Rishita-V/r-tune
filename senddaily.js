@@ -66,3 +66,5 @@ async function sendDailyVoice() {
 
 // Run it once and exit
 sendDailyVoice();
+
+bot.telegram.sendMessage(process.env.CHAT_ID, "Testing manual message");
