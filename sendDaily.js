@@ -1,62 +1,75 @@
 require("dotenv").config();
 const { Telegraf } = require("telegraf");
+const cron = require("node-cron");
+const { google } = require("googleapis");
 
-// Parse Google service account JSON from environment variable
-const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT;
-let serviceAccount = null;
-try {
-  serviceAccount = JSON.parse(serviceAccountJson);
-} catch (err) {
-  console.error("Invalid GOOGLE_SERVICE_ACCOUNT JSON", err);
-  process.exit(1);
-}
-
-// Initialize your Google Drive logic here if needed using serviceAccount
-// For now, we assume you use file IDs hardcoded like before
-
+// Initialize Telegram bot
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const chatId = process.env.CHAT_ID; // Set this secret in GitHub for your user/chat ID
 
-const googleDriveMap = {
-  "day1.mp3": "1jUaS2tw9lZxDCXVlqhKA8Lz_Q5WbZ39O",
-  // Add more mappings as you upload files
-};
+// Parse Google Service Account JSON
+const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
 
+// Authenticate Google Drive
+const auth = new google.auth.JWT(
+  serviceAccount.client_email,
+  null,
+  serviceAccount.private_key,
+  ["https://www.googleapis.com/auth/drive.readonly"]
+);
+const drive = google.drive({ version: "v3", auth });
+
+// Function to get current day number since July 24
 function getCurrentDayNumber() {
   const start = new Date("2024-07-24");
   const now = new Date();
   const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-  return diff + 1;
+  return diff + 1; // day1 starts on July 24
 }
 
-function getFileId(filename) {
-  return googleDriveMap[filename] || "";
+// Get file ID from Google Drive folder
+async function getFileIdFromDrive(filename) {
+  const res = await drive.files.list({
+    q: name='${filename}' and '${process.env.GDRIVE_FOLDER_ID}' in parents,
+    fields: "files(id, name)",
+    spaces: "drive",
+  });
+  const file = res.data.files[0];
+  return file ? file.id : null;
 }
 
-function directLink(fileId) {
-  return `https://drive.google.com/uc?export=download&id=${fileId}`;
+// Get direct download link for voice file
+async function getDirectLink(filename) {
+  const fileId = await getFileIdFromDrive(filename);
+  if (!fileId) return null;
+  return https://drive.google.com/uc?export=download&id=${fileId};
 }
 
-(async () => {
+// Send daily message and audio
+async function sendDailyVoice() {
   const day = getCurrentDayNumber();
-  const filename = `day${day}.mp3`;
-  const fileId = getFileId(filename);
+  const filename = day${day}.mp3;
+  const url = await getDirectLink(filename);
 
-  if (!fileId) {
-    console.log("No voice file found for today:", filename);
-    process.exit(0);
+  if (!url) {
+    console.log("Voice file not found:", filename);
+    return;
   }
 
-  const url = directLink(fileId);
+  const chatId = process.env.CHAT_ID;
 
   try {
     await bot.telegram.sendMessage(chatId, "Your daily dose of Love ❤");
     await bot.telegram.sendAudio(chatId, { url });
-    console.log("Daily voice message sent!");
+    console.log(Sent day ${day} audio to ${chatId});
   } catch (err) {
-    console.error("Error sending message:", err.message);
-    process.exit(1);
+    console.error("Failed to send message:", err.message);
   }
+}
 
-  process.exit(0);
-})();
+// Schedule daily message at 9 AM IST (3:30 UTC)
+cron.schedule("0 3 * * *", () => {
+  sendDailyVoice();
+});
+
+bot.launch();
+console.log("Bot is running...");
