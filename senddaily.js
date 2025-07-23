@@ -43,29 +43,30 @@ async function getDirectLink(filename) {
 // Main function
 async function sendDailyVoice() {
   const chatId = process.env.CHAT_ID;
-  console.log("🔔 Sending to chat ID:", chatId);
-
   const day = getCurrentDayNumber();
   const filename = `day${day}.mp3`;
-  console.log("🎧 Today's file:", filename);
+  
+  console.log("📆 Day:", day);
+  console.log("📁 Filename:", filename);
+  console.log("💬 Chat ID:", chatId);
 
   const url = await getDirectLink(filename);
+  console.log("🔗 Download URL:", url);
 
   if (!url) {
-    console.log("❌ Voice file not found or inaccessible");
+    console.log("❌ No file found or not public");
     return;
   }
 
-  console.log("✅ File URL:", url);
-
   try {
     await bot.telegram.sendMessage(chatId, "Your daily dose of Love ❤");
+    console.log("✅ Message sent");
+
     await bot.telegram.sendAudio(chatId, { url });
-    console.log(`✅ Sent day ${day} audio successfully`);
+    console.log("✅ Audio sent");
   } catch (err) {
-    console.error("❌ Failed to send message:", err.message);
+    console.error("❌ Telegram error:", err.response?.description || err.message);
   }
 }
-
 // Run and exit
 sendDailyVoice();
