@@ -2,12 +2,6 @@ require("dotenv").config();
 const { Telegraf } = require("telegraf");
 const { google } = require("googleapis");
 
-// 🔐 Logging env var presence
-console.log("🤖 BOT_TOKEN:", process.env.BOT_TOKEN ? "✅" : "❌ Missing");
-console.log("📁 GDRIVE_FOLDER_ID:", process.env.GDRIVE_FOLDER_ID ? "✅" : "❌ Missing");
-console.log("🧾 GOOGLE_SERVICE_ACCOUNT:", process.env.GOOGLE_SERVICE_ACCOUNT ? "✅" : "❌ Missing");
-console.log("💬 CHAT_ID:", process.env.CHAT_ID ? "✅" : "❌ Missing");
-
 // Initialize bot
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
@@ -21,11 +15,14 @@ const auth = new google.auth.JWT(
 );
 const drive = google.drive({ version: "v3", auth });
 
-// 🧪 TEMP: Use fixed day for testing
-const day = 1;
-const filename = `day${day}.mp3`;
+// Get current day number starting from 2025-07-24
+function getCurrentDayNumber() {
+  const start = new Date("2025-07-24");
+  const now = new Date();
+  return Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+}
 
-// Get file ID from Google Drive
+// Get file ID from Drive
 async function getFileIdFromDrive(filename) {
   const res = await drive.files.list({
     q: `name='${filename}' and '${process.env.GDRIVE_FOLDER_ID}' in parents`,
@@ -36,26 +33,26 @@ async function getFileIdFromDrive(filename) {
   return file ? file.id : null;
 }
 
-// Get direct link
+// Get direct download link
 async function getDirectLink(filename) {
   const fileId = await getFileIdFromDrive(filename);
-  if (!fileId) {
-    console.log("❌ Could not find file in Drive:", filename);
-    return null;
-  }
-  console.log("✅ File ID:", fileId);
+  if (!fileId) return null;
   return `https://drive.google.com/uc?export=download&id=${fileId}`;
 }
 
-// Send voice message
-async function sendDailyVoice() {
+// Main function
+async function sendDaily() {
   const chatId = process.env.CHAT_ID;
   console.log("🔔 Sending to chat ID:", chatId);
+
+  const day = getCurrentDayNumber();
+  const filename = `day${day}.mp3`;
   console.log("🎧 Today's file:", filename);
 
   const url = await getDirectLink(filename);
+
   if (!url) {
-    console.log("❌ Could not get file URL");
+    console.log("❌ Voice file not found or inaccessible");
     return;
   }
 
@@ -70,5 +67,5 @@ async function sendDailyVoice() {
   }
 }
 
-// Run
-sendDailyVoice();
+// Run and exit
+sendDaily();
