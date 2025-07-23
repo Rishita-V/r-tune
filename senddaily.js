@@ -70,4 +70,7 @@ async function sendDaily() {
 }
 
 // Run it
-sendDaily();
+sendDaily().finally(() => {
+  bot.stop();
+  process.exit(0);
+});
