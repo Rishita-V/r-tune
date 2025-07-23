@@ -2,13 +2,11 @@ require("dotenv").config();
 const { Telegraf } = require("telegraf");
 const { google } = require("googleapis");
 
-// Initialize Telegram bot
+// Initialize bot
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// Parse Google Service Account JSON
-const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
-
 // Authenticate Google Drive
+const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
 const auth = new google.auth.JWT(
   serviceAccount.client_email,
   null,
@@ -24,7 +22,7 @@ function getCurrentDayNumber() {
   return Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
 }
 
-// Get file ID from Drive
+// Get file ID
 async function getFileIdFromDrive(filename) {
   const res = await drive.files.list({
     q: `name='${filename}' and '${process.env.GDRIVE_FOLDER_ID}' in parents`,
@@ -35,36 +33,39 @@ async function getFileIdFromDrive(filename) {
   return file ? file.id : null;
 }
 
-// Get download link
+// Get direct download link
 async function getDirectLink(filename) {
   const fileId = await getFileIdFromDrive(filename);
   if (!fileId) return null;
   return `https://drive.google.com/uc?export=download&id=${fileId}`;
 }
 
-// Main function to run once
+// Main function
 async function sendDailyVoice() {
+  const chatId = process.env.CHAT_ID;
+  console.log("🔔 Sending to chat ID:", chatId);
+
   const day = getCurrentDayNumber();
   const filename = `day${day}.mp3`;
+  console.log("🎧 Today's file:", filename);
+
   const url = await getDirectLink(filename);
 
   if (!url) {
-    console.log("Voice file not found:", filename);
+    console.log("❌ Voice file not found or inaccessible");
     return;
   }
 
-  const chatId = process.env.CHAT_ID;
+  console.log("✅ File URL:", url);
 
   try {
     await bot.telegram.sendMessage(chatId, "Your daily dose of Love ❤");
     await bot.telegram.sendAudio(chatId, { url });
-    console.log(`Sent day ${day} audio to ${chatId}`);
+    console.log(`✅ Sent day ${day} audio successfully`);
   } catch (err) {
-    console.error("Failed to send message:", err.message);
+    console.error("❌ Failed to send message:", err.message);
   }
 }
 
-// Run it once and exit
+// Run and exit
 sendDailyVoice();
-
-bot.telegram.sendMessage(process.env.CHAT_ID, "Testing manual message");
