@@ -2,13 +2,14 @@ require("dotenv").config();
 const { Telegraf } = require("telegraf");
 const { google } = require("googleapis");
 
-// Initialize bot
-const bot = new Telegraf(process.env.BOT_TOKEN);
-
+// Debug: Check env variables
 console.log("🤖 BOT_TOKEN:", process.env.BOT_TOKEN ? "✅" : "❌ Missing");
 console.log("📁 GDRIVE_FOLDER_ID:", process.env.GDRIVE_FOLDER_ID ? "✅" : "❌ Missing");
 console.log("🧾 GOOGLE_SERVICE_ACCOUNT:", process.env.GOOGLE_SERVICE_ACCOUNT ? "✅" : "❌ Missing");
 console.log("💬 CHAT_ID:", process.env.CHAT_ID ? "✅" : "❌ Missing");
+
+// Init Telegram bot
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
 // Authenticate Google Drive
 const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
@@ -27,7 +28,7 @@ function getCurrentDayNumber() {
   return Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
 }
 
-// Get file ID
+// Get file ID from Drive
 async function getFileIdFromDrive(filename) {
   const res = await drive.files.list({
     q: `name='${filename}' and '${process.env.GDRIVE_FOLDER_ID}' in parents`,
@@ -42,36 +43,31 @@ async function getFileIdFromDrive(filename) {
 async function getDirectLink(filename) {
   const fileId = await getFileIdFromDrive(filename);
   if (!fileId) return null;
-  return `https://drive.google.com/uc?export=download&id=${fileId}`;
+  return https://drive.google.com/uc?export=download&id=${fileId};
 }
 
-// Main function
-async function sendDailyVoice() {
+// Send the daily voice message
+async function sendDaily() {
   const chatId = process.env.CHAT_ID;
   const day = getCurrentDayNumber();
   const filename = `day${day}.mp3`;
-  
-  console.log("📆 Day:", day);
-  console.log("📁 Filename:", filename);
-  console.log("💬 Chat ID:", chatId);
 
+  console.log(`📅 Day ${day} → Looking for file: ${filename}`);
   const url = await getDirectLink(filename);
-  console.log("🔗 Download URL:", url);
 
   if (!url) {
-    console.log("❌ No file found or not public");
+    console.log("❌ No voice file found or accessible.");
     return;
   }
 
   try {
     await bot.telegram.sendMessage(chatId, "Your daily dose of Love ❤");
-    console.log("✅ Message sent");
-
     await bot.telegram.sendAudio(chatId, { url });
-    console.log("✅ Audio sent");
+    console.log(`✅ Sent "${filename}" to ${chatId}`);
   } catch (err) {
-    console.error("❌ Telegram error:", err.response?.description || err.message);
+    console.error("❌ Failed to send audio:", err.message);
   }
 }
-// Run and exit
-sendDailyVoice();
+
+// Run it
+sendDaily();
