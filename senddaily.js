@@ -5,6 +5,11 @@ const { google } = require("googleapis");
 // Initialize bot
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
+console.log("🤖 BOT_TOKEN:", process.env.BOT_TOKEN ? "✅" : "❌ Missing");
+console.log("📁 GDRIVE_FOLDER_ID:", process.env.GDRIVE_FOLDER_ID ? "✅" : "❌ Missing");
+console.log("🧾 GOOGLE_SERVICE_ACCOUNT:", process.env.GOOGLE_SERVICE_ACCOUNT ? "✅" : "❌ Missing");
+console.log("💬 CHAT_ID:", process.env.CHAT_ID ? "✅" : "❌ Missing");
+
 // Authenticate Google Drive
 const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
 const auth = new google.auth.JWT(
