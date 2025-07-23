@@ -19,7 +19,7 @@ const drive = google.drive({ version: "v3", auth });
 
 // Get current day number
 function getCurrentDayNumber() {
-  const start = new Date("2024-07-24");
+  const start = new Date("2024-07-23");
   const now = new Date();
   return Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
 }
