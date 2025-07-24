@@ -41,6 +41,8 @@ async function getDirectLink(filename) {
   return `https://drive.google.com/uc?export=download&id=${fileId}`;
 }
 
+console.log("Chat IDs from env:", process.env.CHAT_IDS);
+
 // Main function to send message to all users
 async function sendDailyVoice() {
   const chatIds = process.env.CHAT_IDS.split(",").map((id) => id.trim());
